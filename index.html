@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Rescue Eye: Unified AI Flood Prediction & Early Warning Platform. Production-grade disaster intelligence with automatic meteorological, hydrological, and geospatial data collection.">
+    <title>Rescue Eye | Unified AI Flood Prediction & Early Warning</title>
+
+    <!-- Leaflet GIS CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+    <!-- Chart.js for Dynamic Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- HLS.js for Live RTMP/HLS Drone Streaming -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+</head>
+<body class="dark-theme">
+
+    <!-- Top Scientific & Emergency Disclaimer Banner -->
+    <aside class="emergency-disclaimer-bar" role="alert">
+        <div class="disclaimer-content">
+            <span class="pulse-indicator"></span>
+            <strong>RESCUE EYE EARLY WARNING:</strong>
+            <span>Flood Risk Analysis Engine. Predictions are algorithmic estimates based on real-time meteorology and telemetry. Do not replace authorized disaster-management mandates.</span>
+        </div>
+        <div class="disclaimer-actions">
+            <span class="badge badge-verified" id="systemHealthBadge">System: CONNECTING...</span>
+            <button class="btn btn-sm btn-ghost" id="btnAudioToggle" title="Toggle Emergency Siren Tone">
+                <span id="audioStatusText">🔊 Alerts: ON</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Navigation Header -->
+    <header class="app-header">
+        <div class="brand-container">
+            <div class="logo-mark">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            </div>
+            <div>
+                <h1 class="brand-title">RESCUE EYE</h1>
+                <div class="brand-tagline">UNIFIED AI FLOOD PREDICTION & EARLY WARNING</div>
+            </div>
+        </div>
+        <div class="header-controls">
+            <button class="btn btn-danger btn-sm btn-sos-beacon" id="btnEmergencySos" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); color: #ffffff; font-weight: 700; border: 1px solid #f87171; box-shadow: 0 0 12px rgba(239, 68, 68, 0.5); display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                🚨 EMERGENCY SOS
+            </button>
+            <button class="btn btn-secondary btn-sm" id="btnOpenDroneLab">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+                Drone Aerial CV
+            </button>
+            <button class="btn btn-secondary btn-sm" id="btnOpenHistory">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Prediction History
+            </button>
+            <button class="btn btn-secondary btn-sm" id="btnOpenModelGovernance">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 8.5 2 15.5 12 22 22 15.5 22 8.5 12 2"/></svg>
+                Model Governance
+            </button>
+            <button class="btn btn-warning btn-sm btn-gold" id="btnStartDemo" style="background: transparent; border: 1px solid #f59e0b; color: #f59e0b;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                START DEMO
+            </button>
+            <button class="btn btn-primary btn-sm" id="btnExportReport" style="background: #0ea5e9; color: white;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download Report
+            </button>
+            <div style="position: relative;">
+                <button class="btn btn-secondary btn-sm" id="btnAlertsToggle">
+                    🔔 Alerts <span class="badge badge-danger" id="alertCountBadge" style="margin-left: 4px; padding: 2px 6px; font-size: 10px; border-radius: 999px;">0</span>
+                </button>
+                <div id="alertsDropdown" class="hidden" style="position: absolute; right: 0; top: 38px; width: 260px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; z-index: 1000; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+                    <div style="font-weight: bold; font-size: 13px; margin-bottom: 8px; color: #f8fafc;">System Alerts</div>
+                    <div id="alertsList" style="font-size: 12px; color: #94a3b8;">No alerts.</div>
+                </div>
+            </div>
+            <a href="/presentation.html" class="btn btn-secondary btn-sm" style="border: 1px solid #00F0FF; color: #00F0FF; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                📽️ Slides
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Application Flow -->
+    <main class="app-body" style="padding: 24px; max-width: 1440px; margin: 0 auto; width: 100%;">
+
+        <!-- ======================================================== -->
+        <!-- CORE USER INTERACTION BAR: LOCATION & FORECAST DURATION   -->
+        <!-- ======================================================== -->
+        <section class="card p-4 search-hero-card mb-4" id="interactionBarCard">
+            <div class="search-inputs-grid">
+                <!-- Search Field -->
+                <div class="search-field-group">
+                    <label class="field-label" for="locationSearchInput">SEARCH TARGET BASIN OR SECTOR</label>
+                    <div class="input-with-icon location-search-field">
+                        <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" id="locationSearchInput" class="form-control" placeholder="Search target location (e.g., Kopargaon, Mumbai, Brahmaputra...)" autocomplete="off" value="Kopargaon">
+                        <div id="autocompleteList" class="autocomplete-dropdown hidden"></div>
+                    </div>
+                </div>
+
+                <!-- Right: Use Current Location + Duration -->
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label class="field-label" style="margin-bottom: 0;">FORECAST WINDOW</label>
+                        <button class="btn btn-xs btn-ghost text-info" id="btnUseCurrentLocation" style="padding: 2px 8px;">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="12 2 15 12 12 22 9 12 12 2"/></svg>
+                            Use Current Location
+                        </button>
+                    </div>
+                    <div class="forecast-pills-row" id="forecastPillsGroup">
+                        <button class="pill-btn" data-hours="1">1 hour</button>
+                        <button class="pill-btn" data-hours="3">3 hours</button>
+                        <button class="pill-btn active" data-hours="6">6 hours (Default)</button>
+                        <button class="pill-btn" data-hours="12">12 hours</button>
+                        <button class="pill-btn" data-hours="24">24 hours</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Basins Row -->
+            <div class="quick-basins-row mt-3">
+                <span class="quick-label">High-Risk Basins:</span>
+                <button class="quick-basin-chip" data-name="Kopargaon, Maharashtra" data-lat="19.8824" data-lng="74.4761">Kopargaon, Maharashtra</button>
+                <button class="quick-basin-chip" data-name="Mumbai, Maharashtra" data-lat="19.0760" data-lng="72.8777">Mumbai, Maharashtra</button>
+                <button class="quick-basin-chip" data-name="Kochi, Kerala" data-lat="9.9312" data-lng="76.2673">Kochi, Kerala</button>
+                <button class="quick-basin-chip" data-name="Guwahati, Assam" data-lat="26.1445" data-lng="91.7362">Guwahati, Assam</button>
+                <button class="quick-basin-chip" data-name="Patna, Bihar" data-lat="25.5941" data-lng="85.1376">Patna, Bihar</button>
+                <button class="quick-basin-chip" data-name="Chennai, Tamil Nadu" data-lat="13.0827" data-lng="80.2707">Chennai, Tamil Nadu</button>
+            </div>
+
+            <!-- Active Target Summary & Big Analyze Button -->
+            <div class="search-action-bar mt-3">
+                <div class="selected-target-summary">
+                    <div>
+                        <h4 class="display-target-name" id="displayTargetName" style="font-size: 16px; font-weight: 700; color: #f8fafc; margin-bottom: 2px;">Kopargaon</h4>
+                        <div class="display-target-coords" id="displayTargetCoords" style="font-size: 12px; color: #94a3b8; font-family: var(--font-mono);">Lat: 19.8800° N, Lng: 74.4700° E</div>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-lg" id="btnAnalyzeFloodRisk" style="background: #00F0FF; color: #000; font-weight: 800; font-size: 14px; padding: 12px 28px; border-radius: 6px; box-shadow: 0 0 20px rgba(0, 240, 255, 0.4); border: none; cursor: pointer;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    ANALYZE FLOOD RISK
+                </button>
+            </div>
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- STEP 25: REAL-TIME PIPELINE PROGRESS STEPPER             -->
+        <!-- ======================================================== -->
+        <section class="card p-4 loading-stepper-card hidden" id="pipelineProgressCard">
+            <h3 class="section-subheading mb-3">
+                <span class="spinner-inline"></span>
+                Executing Autonomous Data Orchestrator & AI Prediction Engine...
+            </h3>
+            <div class="stepper-grid">
+                <div class="step-item" id="step-location"><span class="step-icon">○</span> Location validated & geocoded</div>
+                <div class="step-item" id="step-weather"><span class="step-icon">○</span> Real-time meteorological data collected</div>
+                <div class="step-item" id="step-rainfall"><span class="step-icon">○</span> 24h & 7-day rainfall spectrum collected</div>
+                <div class="step-item" id="step-river"><span class="step-icon">○</span> Catchment river gauge stage analyzed</div>
+                <div class="step-item" id="step-terrain"><span class="step-icon">○</span> Satellite DEM terrain elevation analyzed</div>
+                <div class="step-item" id="step-historical"><span class="step-icon">○</span> Historical flood analogs correlated</div>
+                <div class="step-item" id="step-prediction"><span class="step-icon">○</span> Running unified ensemble prediction model</div>
+                <div class="step-item" id="step-map"><span class="step-icon">○</span> Generating spatial inundation extent map</div>
+                <div class="step-item" id="step-confidence"><span class="step-icon">○</span> Calibrating confidence & uncertainty score</div>
+                <div class="step-item" id="step-forecast"><span class="step-icon">○</span> Preparing final early warning briefing</div>
+            </div>
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- STEP 24: FINAL UNIFIED RESULT VIEW                       -->
+        <!-- ======================================================== -->
+        <section class="unified-result-container" id="unifiedResultContainer">
+            
+            <!-- 1. FLOOD FORECAST HERO KPI PANEL -->
+            <div class="card p-4 result-hero-card">
+                <div class="section-title-row">
+                    <div>
+                        <span class="badge badge-primary">OFFICIAL RESCUE EYE FORECAST</span>
+                        <h2 class="unified-hero-location mt-1" id="resLocation">Kopargaon (Elev: 505m AGL)</h2>
+                    </div>
+                    <span class="badge badge-success text-lg" id="resWarningStatus">NORMAL</span>
+                </div>
+
+                <div class="unified-metrics-grid mt-3">
+                    
+                    <!-- Flood Probability -->
+                    <div class="unified-metric-box box-probability">
+                        <small>FLOOD PROBABILITY</small>
+                        <div class="metric-val-row">
+                            <span class="metric-huge text-info" id="resProbability">22%</span>
+                            <span class="badge badge-success" id="resRiskLevel">LOW RISK</span>
+                        </div>
+                        <span class="metric-footnote">Calibrated Ensemble Estimate</span>
+                    </div>
+
+                    <!-- Estimated Arrival Time -->
+                    <div class="unified-metric-box">
+                        <small>ESTIMATED ARRIVAL TIME</small>
+                        <div class="metric-val-row">
+                            <span class="metric-huge text-warning" id="resArrivalTime">None Projected</span>
+                        </div>
+                        <span class="metric-footnote">Lead time to bankfull breach</span>
+                    </div>
+
+                    <!-- Predicted Extent -->
+                    <div class="unified-metric-box">
+                        <small>PREDICTED AFFECTED AREA</small>
+                        <div class="metric-val-row">
+                            <span class="metric-huge text-info" id="resAffectedArea">1.9 km²</span>
+                        </div>
+                        <span class="metric-footnote">High Hazard: 3.5 km² | Buffer: 4.3 km²</span>
+                    </div>
+
+                    <!-- Confidence -->
+                    <div class="unified-metric-box">
+                        <small>MODEL CONFIDENCE</small>
+                        <div class="metric-val-row">
+                            <span class="metric-huge text-success" id="resConfidence">91%</span>
+                            <span class="badge badge-success">HIGH</span>
+                        </div>
+                        <span class="metric-footnote">Data Completeness Calibrated</span>
+                    </div>
+
+                </div>
+
+                <!-- Scientific Honesty & Disclaimer Banner -->
+                <div class="result-disclaimer-callout mt-4" style="background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(14, 165, 233, 0.25); border-radius: 8px; padding: 12px 16px; font-size: 12px; color: #94a3b8; display: flex; align-items: center; gap: 10px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" style="flex-shrink: 0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    <span><strong>Scientific Honesty & Emergency Disclaimer:</strong> Prediction is an AI-assisted algorithmic forecast and should not replace official disaster-management agency mandates (IMD / CWC / NDMA). Follow local emergency management instructions.</span>
+                </div>
+
+            </div>
+
+            <!-- 2. INTERACTIVE GIS HAZARD MAP -->
+            <div class="card mt-4 p-4">
+                <div class="section-title-row" style="margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="pulse-indicator" style="background: #10b981;"></span>
+                        <h3 class="section-heading" style="font-size: 15px; margin: 0;">INTERACTIVE FLOOD EXTENT & HAZARD MAP</h3>
+                        <span class="text-muted" style="font-size: 12px;" id="mapTargetLabel">Sector: Kopargaon</span>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-xs btn-ghost" id="btnMapRecenter">Recenter Location</button>
+                        <button class="btn btn-xs btn-ghost" id="btnMapSatelliteToggle">Toggle Satellite</button>
+                    </div>
+                </div>
+
+                <div id="unifiedGisMap" class="unified-gis-map-canvas" style="height: 480px; border-radius: 8px; overflow: hidden; border: 1px solid #1e293b;"></div>
+                <div style="margin-top: 10px; font-size: 12px; color: #94a3b8; display: flex; justify-content: space-between; align-items: center;">
+                    <span>💡 <em>Click anywhere on the map to pin-point and instantly run flood risk prediction for that sector.</em></span>
+                    <span style="font-family: var(--font-mono); font-size: 11px; color: #00f0ff;">CartoDB Voyager / ESRI High-Res Layer</span>
+                </div>
+            </div>
+
+            <!-- 3. EXPLAINABLE AI & DATA TELEMETRY GRID -->
+            <div class="split-details-grid mt-4">
+                <!-- SHAP Explainable Factors -->
+                <div class="card p-4">
+                    <div class="section-title-row mb-3">
+                        <h3 class="section-heading" style="font-size: 14px; margin: 0;">EXPLAINABLE AI: RISK DRIVER FACTORS</h3>
+                        <span class="badge badge-primary">SHAP Decomposition</span>
+                    </div>
+                    <div id="resExplanationList" class="xai-factors-list">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Real-time Ingested Telemetry -->
+                <div class="card p-4">
+                    <div class="section-title-row mb-3">
+                        <h3 class="section-heading" style="font-size: 14px; margin: 0;">TELEMETRY & INGESTION STATUS</h3>
+                        <span class="badge badge-success">LIVE SENSORS</span>
+                    </div>
+                    <div class="data-status-table-wrapper">
+                        <table class="table" style="width: 100%; font-size: 12px;">
+                            <tbody>
+                                <tr>
+                                    <td style="color: #94a3b8; width: 30%;">Meteorology</td>
+                                    <td><strong id="resWeatherSnippet">Connecting...</strong></td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #94a3b8;">Rainfall (24h/Fcst)</td>
+                                    <td><strong id="resRainSnippet">Connecting...</strong></td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #94a3b8;">River Hydro Gauge</td>
+                                    <td><strong id="resRiverSnippet">Connecting...</strong></td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #94a3b8;">Terrain & DEM</td>
+                                    <td><strong id="resTerrainSnippet">Connecting...</strong></td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #94a3b8;">Historical Analogs</td>
+                                    <td><strong id="resHistoricalSnippet">Connecting...</strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- INCIDENT COMMAND: VICTIMS, MISSIONS & ANALYTICS          -->
+        <!-- ======================================================== -->
+        <section class="incident-command-container mt-4" id="incidentCommandSection" style="display: block;">
+            <div class="card p-4">
+                <h3 class="section-heading mb-3">Live Incident Command & Rescue Operations</h3>
+                
+                <div class="grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <!-- Victims Table -->
+                    <div class="victim-panel">
+                        <h4>Detected Victims <span id="victimCountHeader" class="badge badge-danger">0</span></h4>
+                        <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                            <table class="table" style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Location</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="victimsTableBody">
+                                    <tr><td colspan="4" class="text-muted text-center">No victims detected.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Missions Table -->
+                    <div class="mission-panel">
+                        <h4>Active Rescue Missions <span id="missionCountHeader" class="badge badge-warning">0</span></h4>
+                        <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                            <table class="table" style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th>Team</th>
+                                        <th>ETA</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="missionsTableBody">
+                                    <tr><td colspan="3" class="text-muted text-center">No active missions.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Analytics Dashboard -->
+                <div class="analytics-panel mt-4">
+                    <h4>Disaster Analytics & Risk History</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div style="background: #0f172a; padding: 10px; border-radius: 8px;">
+                            <canvas id="riskHistoryChart" height="150"></canvas>
+                        </div>
+                        <div style="background: #0f172a; padding: 10px; border-radius: 8px;">
+                            <canvas id="rescueStatsChart" height="150"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Drawer: Prediction History Modal -->
+    <div class="modal-backdrop hidden" id="historyModal">
+        <div class="modal-card modal-lg">
+            <div class="modal-header">
+                <h3>Prediction History & Risk Trend</h3>
+                <button class="modal-close-btn" id="btnCloseHistoryModal">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Location</th>
+                                <th>Probability</th>
+                                <th>Risk Level</th>
+                                <th>Arrival Time</th>
+                                <th>Confidence</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Drawer: Drone Computer Vision & Split Slider Modal -->
+    <div class="modal-backdrop hidden" id="droneModal">
+        <div class="modal-card modal-lg">
+            <div class="modal-header">
+                <h3>Drone Aerial Reconnaissance & Flooded Area CV</h3>
+                <button class="modal-close-btn" id="btnCloseDroneModal">✕</button>
+            </div>
+            <div class="modal-body">
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+                    <div>
+                        <div class="cv-workspace" style="position: relative;">
+                            <!-- Live Video Element for DJI Feed -->
+                            <video id="djiVideoFeed" class="cv-main-image" crossorigin="anonymous" autoplay muted playsinline style="background: #000; display: block; width: 100%; height: 320px;"></video>
+                            
+                            <!-- Overlay Canvas for AI Detections -->
+                            <canvas id="cvDetectionCanvas" class="cv-detection-canvas" style="position: absolute; top: 0; left: 0; z-index: 10; width: 100%; height: 100%; pointer-events: none;"></canvas>
+                            
+                            <!-- DJI Connection Overlay -->
+                            <div id="djiConnectionOverlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15,23,42,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; padding: 20px;">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" style="margin-bottom: 10px;"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                                <h3 style="color: white; margin-bottom: 20px;">Connect Drone Camera</h3>
+                                
+                                <div style="display: flex; gap: 20px; width: 100%; max-width: 600px;">
+                                    <!-- Option A: Hardware Capture -->
+                                    <div style="flex: 1; background: #1e293b; padding: 15px; border-radius: 8px; border: 1px solid #334155; text-align: center;">
+                                        <h4 style="color: #38bdf8; margin-bottom: 10px;">Webcam / Hardware</h4>
+                                        <p style="color: #94a3b8; font-size: 11px; margin-bottom: 15px;">Connect webcam or USB capture card.</p>
+                                        <button class="btn btn-primary btn-sm w-100" id="btnConnectUsb">Connect Hardware</button>
+                                    </div>
+
+                                    <!-- Option B: Network Stream -->
+                                    <div style="flex: 1; background: #1e293b; padding: 15px; border-radius: 8px; border: 1px solid #334155; text-align: center;">
+                                        <h4 style="color: #10b981; margin-bottom: 10px;">Simulation Feed</h4>
+                                        <p style="color: #94a3b8; font-size: 11px; margin-bottom: 15px;">Live simulated aerial flood search.</p>
+                                        <button class="btn btn-secondary btn-sm w-100" id="btnConnectStream" style="border-color: #10b981; color: #10b981;">Start Recon Stream</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 20px; padding: 15px; background: #1e293b; border-radius: 8px; border: 1px solid #334155;">
+                            <h4 style="color: #94a3b8; font-size: 12px; margin-bottom: 10px;">AI DETECTION RESULTS</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                                <div style="padding: 10px; background: #0f172a; border-radius: 4px; text-align: center;">
+                                    <div style="color: #ef4444; font-size: 10px; font-weight: bold;">PERSON</div>
+                                    <div style="color: white; font-size: 16px; font-weight: bold;" id="cvCountPeople">--</div>
+                                </div>
+                                <div style="padding: 10px; background: #0f172a; border-radius: 4px; text-align: center;">
+                                    <div style="color: #f59e0b; font-size: 10px; font-weight: bold;">VEHICLE</div>
+                                    <div style="color: white; font-size: 16px; font-weight: bold;" id="cvCountVehicles">--</div>
+                                </div>
+                                <div style="padding: 10px; background: #0f172a; border-radius: 4px; text-align: center;">
+                                    <div style="color: #3b82f6; font-size: 10px; font-weight: bold;">BOAT</div>
+                                    <div style="color: white; font-size: 16px; font-weight: bold;" id="cvCountBoats">--</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Live Admin Surveillance & Rescue Dispatch Uplink -->
+                        <div class="user-rescue-dispatch-box" id="userRescueDispatchBox" style="margin-top: 15px; padding: 14px; background: rgba(15,23,42,0.9); border-radius: 8px; border: 1px solid #334155;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <span style="font-size: 11px; font-weight: bold; color: #10b981; display: flex; align-items: center; gap: 6px;">
+                                    <span style="display: inline-block; width: 8px; height: 8px; background: #10b981; border-radius: 50%;"></span>
+                                    ADMIN CCTV STREAM: CONNECTED
+                                </span>
+                                <span id="userLivePersonBadge" style="font-size: 11px; color: #ef4444; font-weight: bold;">Analyzing Field Victims...</span>
+                            </div>
+                            <div id="userDispatchNotice" style="font-size: 12px; color: #94a3b8; line-height: 1.5;">
+                                Camera feed &amp; AI person telemetry are live-transmitting to the Admin Command Center CCTV wall.
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="padding: 15px; background: #1e293b; border-radius: 8px; border: 1px solid #334155; height: 100%;">
+                            <h4 style="color: #94a3b8; font-size: 12px; margin-bottom: 15px;">MISSION TELEMETRY</h4>
+                            <ul style="list-style: none; padding: 0; margin: 0; font-size: 13px; color: white;">
+                                <li style="margin-bottom: 10px;"><span style="color: #64748b; display: inline-block; width: 80px;">Drone ID</span> <strong>RE-01</strong></li>
+                                <li style="margin-bottom: 10px;"><span style="color: #64748b; display: inline-block; width: 80px;">Mission</span> Flood Sector Reconnaissance</li>
+                                <li style="margin-bottom: 10px;"><span style="color: #64748b; display: inline-block; width: 80px;">Status</span> <span id="droneStatusText" style="color: #3b82f6;">AVAILABLE</span></li>
+                                <li style="margin-bottom: 10px;"><span style="color: #64748b; display: inline-block; width: 80px;">GPS</span> <span id="telemetryGps">19.8800, 74.4700</span></li>
+                                <li style="margin-bottom: 10px;"><span style="color: #64748b; display: inline-block; width: 80px;">Altitude</span> <span id="telemetryAlt">120 m</span></li>
+                                <li style="margin-bottom: 10px;"><span style="color: #64748b; display: inline-block; width: 80px;">Speed</span> <span id="telemetrySpeed">0 m/s</span></li>
+                                <li style="margin-bottom: 10px;"><span style="color: #64748b; display: inline-block; width: 80px;">Heading</span> <span id="telemetryHeading">045° NE</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Drawer: Model Governance & Validation Metrics Modal -->
+    <div class="modal-backdrop hidden" id="governanceModal">
+        <div class="modal-card modal-lg">
+            <div class="modal-header">
+                <h3>Scientific Model Governance & Calibration Matrix</h3>
+                <button class="modal-close-btn" id="btnCloseGovernanceModal">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="ml-governance-split">
+                    <div>
+                        <h4 style="font-size: 13px; color: #94a3b8; margin-bottom: 12px;">CROSS-VALIDATED MODEL PERFORMANCE</h4>
+                        <div class="ml-metrics-cards-grid" style="margin-top: 0;">
+                            <div class="ml-metric-card">
+                                <small>ENSEMBLE ACCURACY</small>
+                                <strong class="text-success" id="govAccuracy">91.4%</strong>
+                                <span class="subtext">5-Fold Catchment Stratified</span>
+                            </div>
+                            <div class="ml-metric-card">
+                                <small>PRECISION (PPV)</small>
+                                <strong class="text-info" id="govPrecision">88.6%</strong>
+                                <span class="subtext">Positive Predictive Value</span>
+                            </div>
+                            <div class="ml-metric-card">
+                                <small>RECALL / SENSITIVITY</small>
+                                <strong class="text-warning" id="govRecall">93.2%</strong>
+                                <span class="subtext">Early Flood Inundation Catch</span>
+                            </div>
+                            <div class="ml-metric-card">
+                                <small>ROC-AUC SCORE</small>
+                                <strong class="text-primary" id="govRocAuc">0.952</strong>
+                                <span class="subtext">Discrimination Threshold</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 style="font-size: 13px; color: #94a3b8; margin-bottom: 12px;">INDEPENDENT TEST CONFUSION MATRIX</h4>
+                        <div class="confusion-matrix-grid">
+                            <div class="matrix-cell matrix-header">N=2,400</div>
+                            <div class="matrix-cell matrix-header">PRED: NO</div>
+                            <div class="matrix-cell matrix-header">PRED: FLOOD</div>
+                            <div class="matrix-cell matrix-header">ACTUAL: NO</div>
+                            <div class="matrix-cell cell-tn">
+                                <strong id="govTn">1,280</strong>
+                                <small>True Negative</small>
+                            </div>
+                            <div class="matrix-cell cell-fp">
+                                <strong id="govFp">90</strong>
+                                <small>False Alarm</small>
+                            </div>
+                            <div class="matrix-cell matrix-header">ACTUAL: FLOOD</div>
+                            <div class="matrix-cell cell-fn">
+                                <strong id="govFn">70</strong>
+                                <small>Missed Event</small>
+                            </div>
+                            <div class="matrix-cell cell-tp">
+                                <strong id="govTp">960</strong>
+                                <small>True Flood</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Executive Report Briefing -->
+    <div class="modal-backdrop hidden" id="reportModal">
+        <div class="modal-card modal-lg">
+            <div class="modal-header">
+                <h3>Executive Disaster Intelligence Briefing</h3>
+                <button class="modal-close-btn" id="btnCloseReportModal">✕</button>
+            </div>
+            <div class="modal-body" id="reportModalBody">
+                <!-- Generated dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btnDownloadReportTxt">Download Text (.txt)</button>
+                <button class="btn btn-primary" id="btnPrintReport">Print / Save as PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Citizen Emergency SOS Beacon -->
+    <div class="modal-backdrop hidden" id="sosModal">
+        <div class="modal-card" style="max-width: 520px; border: 1.5px solid #ef4444; box-shadow: 0 10px 40px rgba(239,68,68,0.4);">
+            <div class="modal-header" style="background: rgba(239,68,68,0.15); border-bottom: 1px solid rgba(239,68,68,0.3);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 12px; height: 12px; background: #ef4444; border-radius: 50%; box-shadow: 0 0 10px #ef4444;"></div>
+                    <h3 style="margin: 0; color: #f87171; font-size: 1.15rem; letter-spacing: 0.5px;">🚨 CITIZEN EMERGENCY SOS BEACON</h3>
+                </div>
+                <button class="modal-close-btn" id="btnCloseSosModal">✕</button>
+            </div>
+            <div class="modal-body" style="padding: 20px;">
+                <div id="sosPreTriggerForm">
+                    <p style="font-size: 13px; color: #cbd5e1; margin-top: 0; line-height: 1.5;">
+                        Are you or nearby citizens stranded in floodwaters? Tapping below instantly transmits your exact GPS coordinates to the <strong>Rescue Eye Command Center</strong> and dispatches an emergency tactical rescue unit.
+                    </p>
+                    <div style="background: #0f172a; padding: 14px; border-radius: 8px; border: 1px solid #334155; margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 12px;">
+                            <span style="color: #94a3b8;">GPS Coordinates:</span>
+                            <strong style="color: #38bdf8; font-family: monospace;" id="sosGpsCoords">Detecting GPS...</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 12px;">
+                            <span style="color: #94a3b8;">Sector / Basin:</span>
+                            <strong style="color: #f8fafc;" id="sosSectorName">Target Basin</strong>
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <label style="display: block; font-size: 12px; color: #94a3b8; margin-bottom: 6px;">Trapped Persons Count:</label>
+                            <select id="sosPersonCountInput" style="width: 100%; padding: 8px; background: #1e293b; border: 1px solid #475569; color: white; border-radius: 6px;">
+                                <option value="1">1 Person (Isolated Civilian)</option>
+                                <option value="2">2 Persons</option>
+                                <option value="3">3 - 4 Persons (Family / Group)</option>
+                                <option value="5">5+ Persons (Multiple Trapped)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #fca5a5; cursor: pointer;">
+                                <input type="checkbox" id="sosMedicalCheckbox" style="accent-color: #ef4444;">
+                                Medical Emergency Assistance Required (Elderly, Injured, Infant)
+                            </label>
+                        </div>
+                    </div>
+                    <button class="btn btn-danger w-100" id="btnTransmitSosNow" style="padding: 14px; font-size: 14px; font-weight: 800; background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); border: none; border-radius: 8px; letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(239,68,68,0.5); cursor: pointer;">
+                        📡 TRANSMIT DISTRESS BEACON NOW
+                    </button>
+                </div>
+
+                <div id="sosActiveResponseCard" class="hidden" style="text-align: center;">
+                    <div style="font-size: 40px; margin-bottom: 8px;">🚤</div>
+                    <div style="color: #34d399; font-weight: 800; font-size: 16px; margin-bottom: 4px;">RESCUE UNIT DISPATCHED!</div>
+                    <div style="font-size: 12px; color: #94a3b8; margin-bottom: 16px;">Distress beacon received at Tactical Command Center.</div>
+                    
+                    <div style="background: #0f172a; border: 1px solid #10b981; border-radius: 8px; padding: 16px; margin-bottom: 16px; text-align: left;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px;">
+                            <span style="color: #94a3b8;">Assigned Unit:</span>
+                            <strong style="color: #38bdf8;" id="sosDispatchedUnit">--</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px;">
+                            <span style="color: #94a3b8;">Estimated Arrival:</span>
+                            <strong style="color: #10b981; font-family: monospace; font-size: 15px;" id="sosCountdownEta">06m 40s</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 12px;">
+                            <span style="color: #94a3b8;">Beacon Tracking ID:</span>
+                            <strong style="color: #f8fafc; font-family: monospace;" id="sosTrackingId">--</strong>
+                        </div>
+                    </div>
+
+                    <div style="font-size: 12px; color: #cbd5e1; line-height: 1.5; margin-bottom: 16px;">
+                        Stay calm and seek high ground or a rooftop if water is rising. Help is en route to your exact coordinates. Keep this screen open.
+                    </div>
+                    <button class="btn btn-secondary btn-sm" id="btnCancelSos" style="color: #94a3b8; border-color: #475569;">Stand Down Beacon</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet & TensorFlow.js -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+
+    <!-- Rescue Eye Core Logic -->
+    <script src="app.js"></script>
+</body>
+</html>

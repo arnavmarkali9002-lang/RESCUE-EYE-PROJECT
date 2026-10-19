@@ -1,0 +1,12 @@
+{
+  "name": "rescue-eye-flood-prediction",
+  "version": "1.0.0",
+  "description": "Rescue Eye - AI-Powered Flood Prediction & Early Warning Platform",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["flood-prediction", "ai", "disaster-management", "hydrology"],
+  "author": "",
+  "license": "ISC"
+}

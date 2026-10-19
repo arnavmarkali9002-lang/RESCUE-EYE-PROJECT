@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rescue Eye | Tactical Admin Command & CCTV Surveillance Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        :root {
+            --admin-bg: #070c18;
+            --admin-surface: #0f172a;
+            --admin-card: #141f36;
+            --admin-border: #1e293b;
+            --admin-border-bright: #334155;
+            --admin-cyan: #00f0ff;
+            --admin-red: #ef4444;
+            --admin-amber: #f59e0b;
+            --admin-green: #10b981;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--admin-bg);
+            color: #f8fafc;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Top Command Navigation */
+        .admin-nav {
+            background: #0b1329;
+            padding: 12px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--admin-border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .admin-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .admin-brand h1 {
+            margin: 0;
+            font-size: 1.15rem;
+            letter-spacing: 0.5px;
+            color: #f8fafc;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 800;
+        }
+
+        .admin-brand .brand-sub {
+            font-size: 0.72rem;
+            color: var(--admin-cyan);
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(0,240,255,0.1);
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,240,255,0.25);
+        }
+
+        .admin-nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .live-clock {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: #94a3b8;
+            background: rgba(15,23,42,0.8);
+            padding: 5px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--admin-border);
+        }
+
+        .status-pill-active {
+            color: var(--admin-green);
+            font-weight: 600;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(16,185,129,0.1);
+            padding: 5px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(16,185,129,0.25);
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--admin-green);
+            border-radius: 50%;
+            animation: pulse-ring 1.5s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.6; }
+            100% { transform: scale(0.95); opacity: 1; }
+        }
+
+        /* Main Container */
+        .admin-main {
+            flex: 1;
+            padding: 24px 30px 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            max-width: 1720px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* KPI Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 16px;
+        }
+
+        .kpi-card {
+            background: var(--admin-surface);
+            padding: 16px 20px;
+            border-radius: 10px;
+            border: 1px solid var(--admin-border);
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .kpi-card:hover {
+            border-color: var(--admin-border-bright);
+            transform: translateY(-2px);
+        }
+
+        .kpi-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(56,189,248,0.5), transparent);
+        }
+
+        .kpi-card h3 {
+            margin: 0 0 8px 0;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 600;
+        }
+
+        .kpi-card p {
+            margin: 0;
+            font-size: 1.85rem;
+            font-weight: 800;
+            color: #f8fafc;
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1.1;
+        }
+
+        .kpi-card small {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 4px;
+            display: block;
+        }
+
+        /* CCTV Command Wall Section */
+        .cctv-command-section {
+            background: #091022;
+            border-radius: 12px;
+            border: 1px solid var(--admin-border);
+            padding: 20px 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        }
+
+        .cctv-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--admin-border);
+        }
+
+        .cctv-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .cctv-radar-pulse {
+            width: 14px;
+            height: 14px;
+            background: var(--admin-red);
+            border-radius: 50%;
+            box-shadow: 0 0 12px var(--admin-red);
+            animation: pulse-ring 1.2s infinite;
+        }
+
+        .cctv-section-title {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #f8fafc;
+            letter-spacing: 0.4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cctv-section-subtitle {
+            font-size: 0.78rem;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+
+        .cctv-header-stats {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .cctv-stat-badge {
+            font-size: 11px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 5px 10px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stat-live {
+            background: rgba(239,68,68,0.15);
+            color: #f87171;
+            border: 1px solid rgba(239,68,68,0.3);
+        }
+
+        .stat-persons {
+            background: rgba(245,158,11,0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(245,158,11,0.3);
+        }
+
+        .stat-dispatched {
+            background: rgba(16,185,129,0.15);
+            color: #34d399;
+            border: 1px solid rgba(16,185,129,0.3);
+        }
+
+        .dot-blink {
+            animation: blinker 1s cubic-bezier(0.5, 0, 1, 1) infinite alternate;
+        }
+
+        @keyframes blinker {
+            from { opacity: 1; }
+            to { opacity: 0.2; }
+        }
+
+        /* CCTV Dynamic Grid */
+        .cctv-monitor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 20px;
+        }
+
+        /* Optimized High-Visibility Layout for Single User Camera */
+        .cctv-monitor-grid.single-camera-mode {
+            display: grid;
+            grid-template-columns: 1fr;
+            max-width: 1180px;
+            margin: 0 auto;
+        }
+
+        .cctv-monitor-grid.single-camera-mode .cctv-tile {
+            display: grid;
+            grid-template-columns: 1.45fr 1fr;
+            grid-template-rows: auto 1fr;
+            grid-template-areas:
+                "header header"
+                "video info";
+            min-height: 460px;
+            border-color: #334155;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.7);
+        }
+
+        .cctv-monitor-grid.single-camera-mode .cctv-tile-header {
+            grid-area: header;
+            padding: 12px 18px;
+        }
+
+        .cctv-monitor-grid.single-camera-mode .cctv-video-frame-wrap {
+            grid-area: video;
+            height: 100%;
+            min-height: 420px;
+            background: #000;
+        }
+
+        .cctv-monitor-grid.single-camera-mode .cctv-frame-img {
+            height: 100%;
+            min-height: 420px;
+            object-fit: contain;
+            background: #000;
+        }
+
+        .cctv-monitor-grid.single-camera-mode .cctv-info-body {
+            grid-area: info;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-left: 1px solid var(--admin-border);
+            padding: 18px 20px;
+            background: rgba(15, 23, 42, 0.6);
+            gap: 12px;
+        }
+
+        @media (max-width: 900px) {
+            .cctv-monitor-grid.single-camera-mode .cctv-tile {
+                display: flex;
+                flex-direction: column;
+            }
+        }
+
+        .cctv-tile {
+            background: var(--admin-surface);
+            border: 1px solid var(--admin-border);
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: border-color 0.25s, box-shadow 0.25s;
+            position: relative;
+        }
+
+        .cctv-tile:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 8px 24px rgba(59,130,246,0.15);
+        }
+
+        .cctv-tile.highlighted {
+            border-color: #00f0ff !important;
+            box-shadow: 0 0 25px rgba(0,240,255,0.4) !important;
+        }
+
+        .cctv-tile-header {
+            background: #0d162b;
+            padding: 10px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--admin-border);
+        }
+
+        .cctv-tile-channel {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .channel-indicator {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 800;
+            background: rgba(239,68,68,0.2);
+            color: #f87171;
+            padding: 2px 7px;
+            border-radius: 4px;
+            border: 1px solid rgba(239,68,68,0.35);
+        }
+
+        .channel-indicator.green-glow {
+            background: rgba(16,185,129,0.2);
+            color: #34d399;
+            border-color: rgba(16,185,129,0.35);
+        }
+
+        .feed-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #f1f5f9;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 170px;
+        }
+
+        .cctv-tile-tags {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-user-live {
+            background: rgba(56,189,248,0.15);
+            color: #38bdf8;
+            font-size: 10px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 2px 6px;
+            border-radius: 3px;
+            border: 1px solid rgba(56,189,248,0.3);
+        }
+
+        .feed-fps {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: #64748b;
+        }
+
+        .btn-cctv-expand {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--admin-border);
+            color: #94a3b8;
+            padding: 3px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .btn-cctv-expand:hover {
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+
+        /* Viewport Container */
+        .cctv-viewport {
+            position: relative;
+            width: 100%;
+            height: 220px;
+            background: #000;
+            overflow: hidden;
+        }
+
+        .cctv-frame-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Military Reticles */
+        .cctv-reticle {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            pointer-events: none;
+            border-color: rgba(0,240,255,0.65);
+            border-style: solid;
+        }
+
+        .cctv-reticle.top-left { top: 8px; left: 8px; border-width: 2px 0 0 2px; }
+        .cctv-reticle.top-right { top: 8px; right: 8px; border-width: 2px 2px 0 0; }
+        .cctv-reticle.bottom-left { bottom: 8px; left: 8px; border-width: 0 0 2px 2px; }
+        .cctv-reticle.bottom-right { bottom: 8px; right: 8px; border-width: 0 2px 2px 0; }
+
+        .cctv-hud-overlay {
+            position: absolute;
+            left: 0;
+            right: 0;
+            padding: 6px 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%);
+            pointer-events: none;
+        }
+
+        .cctv-hud-overlay.top { top: 0; color: var(--admin-cyan); }
+        .cctv-hud-overlay.bottom {
+            bottom: 0;
+            background: linear-gradient(0deg, rgba(0,0,0,0.75) 0%, transparent 100%);
+            color: #94a3b8;
+        }
+
+        /* AI Detection Summary Bar */
+        .cctv-detection-bar {
+            padding: 10px 14px;
+            background: #0f182c;
+            border-bottom: 1px solid var(--admin-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .detection-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .detection-pill.danger {
+            background: rgba(239,68,68,0.2);
+            color: #f87171;
+            border: 1px solid rgba(239,68,68,0.4);
+            animation: pulse-ring 2s infinite;
+        }
+
+        .detection-pill.warning {
+            background: rgba(245,158,11,0.2);
+            color: #fbbf24;
+            border: 1px solid rgba(245,158,11,0.4);
+        }
+
+        .detection-pill.safe {
+            background: rgba(16,185,129,0.15);
+            color: #34d399;
+            border: 1px solid rgba(16,185,129,0.3);
+        }
+
+        .detection-secondary-metrics {
+            font-size: 11px;
+            color: #94a3b8;
+            display: flex;
+            gap: 8px;
+        }
+
+        .detection-secondary-metrics strong {
+            color: #f8fafc;
+        }
+
+        /* Recommendation Box */
+        .cctv-recommendation-card {
+            padding: 12px 14px;
+            background: rgba(15,23,42,0.6);
+            border-bottom: 1px solid var(--admin-border);
+            font-size: 12px;
+        }
+
+        .rec-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .rec-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #38bdf8;
+            letter-spacing: 0.5px;
+        }
+
+        .rec-team-name {
+            font-weight: 700;
+            color: #f8fafc;
+            font-size: 12px;
+        }
+
+        .rec-rationale {
+            font-size: 11px;
+            color: #94a3b8;
+            line-height: 1.4;
+            margin-bottom: 6px;
+        }
+
+        .rec-specs {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10.5px;
+            color: #64748b;
+        }
+
+        .rec-specs strong {
+            color: #cbd5e1;
+        }
+
+        /* Dispatch Action Area */
+        .cctv-dispatch-action-box {
+            padding: 12px 14px;
+            background: #091022;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .dispatch-form-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .dispatch-select {
+            flex: 1;
+            padding: 8px 10px;
+            background: #0f172a;
+            border: 1px solid var(--admin-border-bright);
+            color: white;
+            border-radius: 6px;
+            font-size: 11px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .btn-dispatch-now {
+            padding: 8px 14px;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            transition: filter 0.2s, transform 0.1s;
+            box-shadow: 0 2px 8px rgba(239,68,68,0.3);
+        }
+
+        .btn-dispatch-now:hover {
+            filter: brightness(1.15);
+            transform: translateY(-1px);
+        }
+
+        /* En Route Approach Panel */
+        .approach-status-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .approach-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .badge-status-enroute {
+            background: rgba(16,185,129,0.15);
+            color: #34d399;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(16,185,129,0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .countdown-eta-box {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #050a14;
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid #10b981;
+        }
+
+        .countdown-eta-label {
+            font-size: 10px;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .countdown-eta-clock {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            font-weight: 800;
+            color: #10b981;
+            letter-spacing: 0.5px;
+        }
+
+        .approach-progress-track {
+            width: 100%;
+            height: 6px;
+            background: #1e293b;
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .approach-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            border-radius: 3px;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .approach-details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+            font-size: 10.5px;
+            color: #94a3b8;
+        }
+
+        .approach-details-grid strong {
+            color: #f1f5f9;
+        }
+
+        .approach-actions-row {
+            display: flex;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .btn-action-sm {
+            flex: 1;
+            padding: 5px 8px;
+            font-size: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid var(--admin-border-bright);
+            background: rgba(255,255,255,0.05);
+            color: #cbd5e1;
+            text-align: center;
+            font-weight: 600;
+            transition: background 0.15s;
+        }
+
+        .btn-action-sm:hover {
+            background: rgba(255,255,255,0.12);
+            color: white;
+        }
+
+        .btn-action-sm.success {
+            border-color: rgba(16,185,129,0.4);
+            color: #34d399;
+            background: rgba(16,185,129,0.1);
+        }
+
+        .btn-action-sm.success:hover {
+            background: rgba(16,185,129,0.25);
+        }
+
+        /* Buttons & Forms */
+        .btn-primary-drone {
+            background: #0284c7;
+            color: white;
+            border: none;
+            padding: 7px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary-drone:hover {
+            background: #0369a1;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--admin-border-bright);
+            color: #94a3b8;
+            padding: 7px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .btn-outline:hover {
+            color: white;
+            border-color: #64748b;
+        }
+
+        /* Table Styling */
+        .table-container {
+            background: var(--admin-surface);
+            border-radius: 10px;
+            border: 1px solid var(--admin-border);
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        .table-container h3 {
+            margin: 0 0 16px 0;
+            font-size: 1.05rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th, td {
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--admin-border);
+        }
+
+        th {
+            color: #64748b;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.72rem;
+            letter-spacing: 0.6px;
+            background: rgba(15,23,42,0.4);
+        }
+
+        tbody tr:hover td {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .badge-success { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .badge-danger { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .badge-amber { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+
+        /* Fullscreen CCTV Modal */
+        #cctvExpandModal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.88);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            padding: 20px;
+        }
+
+        .cctv-modal-card {
+            background: #0b1329;
+            border: 1px solid var(--admin-border-bright);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 1080px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+        }
+
+        .cctv-modal-header {
+            padding: 14px 20px;
+            background: #0f1a36;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--admin-border);
+        }
+
+        .cctv-modal-body {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        /* Login Screen Overlay */
+        #loginOverlay {
+            position: fixed;
+            inset: 0;
+            background: #070c18;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .login-box {
+            background: #0f172a;
+            padding: 40px;
+            border-radius: 12px;
+            border: 1px solid var(--admin-border);
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+        }
+
+        .login-box h2 {
+            text-align: center;
+            margin-top: 0;
+            color: #ef4444;
+            font-size: 1.5rem;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #94a3b8; font-size: 13px; }
+        .form-control { width: 100%; padding: 11px; background: #070c18; border: 1px solid var(--admin-border); color: white; border-radius: 6px; box-sizing: border-box; }
+        .btn-primary { width: 100%; padding: 12px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 700; }
+        .btn-primary:hover { background: #2563eb; }
+    </style>
+</head>
+<body>
+    <!-- Login Screen Overlay -->
+    <div id="loginOverlay">
+        <div class="login-box">
+            <h2>RESCUE EYE<br><span style="font-size: 0.95rem; color: #f8fafc; font-weight: 500;">TACTICAL COMMAND &amp; CCTV SURVEILLANCE</span></h2>
+            <form id="adminLoginForm">
+                <div class="form-group">
+                    <label>Email ID</label>
+                    <input type="email" id="loginEmail" class="form-control" required value="admin@rescueeye.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" class="form-control" required value="admin123">
+                </div>
+                <button type="submit" class="btn-primary">AUTHENTICATE COMMANDER</button>
+                <p id="loginError" style="color: #ef4444; text-align: center; display: none; margin-top: 15px; font-size: 13px;">Invalid credentials.</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Navigation Header -->
+    <nav class="admin-nav">
+        <div class="admin-brand">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            <h1>RESCUE EYE COMMAND</h1>
+            <span class="brand-sub">TACTICAL CCTV OPS</span>
+        </div>
+        <div class="admin-nav-actions">
+            <span class="live-clock" id="adminClock">--:--:-- IST</span>
+            <span class="status-pill-active">
+                <span class="pulse-dot"></span> OPERATIONAL
+            </span>
+            <a href="/" target="_blank" class="btn-primary-drone" title="Open citizen flood prediction and drone video view">
+                🌐 Field User View
+            </a>
+            <span style="color: #64748b; font-size: 13px;">Admin | <a href="#" id="btnLogout" style="color: #ef4444; text-decoration: none; font-weight: 600;">Logout</a></span>
+        </div>
+    </nav>
+
+    <!-- Main Workspace -->
+    <main class="admin-main">
+        <!-- Top Operational Metrics Bar (Real Data Only) -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <h3>Active Cameras</h3>
+                <p id="kpiCameras" style="color: #38bdf8;">0</p>
+                <small>Live Field Webcams Connected</small>
+            </div>
+            <div class="kpi-card">
+                <h3>AI Person Count</h3>
+                <p id="kpiDistressPersons" style="color: #ef4444;">0</p>
+                <small>Edge Object Vision Detections</small>
+            </div>
+            <div class="kpi-card">
+                <h3>Rescue Missions</h3>
+                <p id="kpiMissions" style="color: #10b981;">0</p>
+                <small>Dispatched Units En Route</small>
+            </div>
+            <div class="kpi-card">
+                <h3>Citizen SOS Beacons</h3>
+                <p id="kpiSos" style="color: #f59e0b;">0</p>
+                <small>Direct Distress Signals</small>
+            </div>
+            <div class="kpi-card">
+                <h3>Sector Location</h3>
+                <p id="kpiLocation" style="font-size: 1.25rem; color: #f8fafc; font-family: 'JetBrains Mono', monospace;">Kopargaon Sector</p>
+                <small>Target Sector Coordinates</small>
+            </div>
+        </div>
+
+        <!-- LIVE CCTV & DRONE SURVEILLANCE MATRIX -->
+        <section class="cctv-command-section">
+            <div class="cctv-header-bar">
+                <div class="cctv-header-left">
+                    <div class="cctv-radar-pulse"></div>
+                    <div>
+                        <h2 class="cctv-section-title">
+                            LIVE CCTV &amp; AERIAL DRONE SURVEILLANCE WALL
+                        </h2>
+                        <div class="cctv-section-subtitle">
+                            Continuous AI edge computer vision detecting victims, analyzing crowd clusters &amp; auto-calculating rescue approach ETA
+                        </div>
+                    </div>
+                </div>
+                <div class="cctv-header-stats">
+                    <span class="cctv-stat-badge stat-live" id="cctvFeedsOnlineBadge"><span class="dot-blink">●</span> 0 FEEDS ONLINE</span>
+                    <span class="cctv-stat-badge stat-persons" id="cctvVictimsBadge">👥 0 PERSONS MONITORED</span>
+                    <span class="cctv-stat-badge stat-dispatched" id="cctvMissionsBadge">🚀 0 TEAMS DISPATCHED</span>
+                    <button class="btn-outline" id="btnSyncFeedsNow" title="Force refresh CCTV feeds">🔄 Sync Feeds</button>
+                </div>
+            </div>
+
+            <!-- CCTV Monitor Grid (Populated dynamically via admin.js) -->
+            <div class="cctv-monitor-grid" id="cctvMonitorGrid">
+                <!-- Hydrated dynamically by admin.js based on active cameras -->
+            </div>
+        </section>
+
+        <!-- Incidents Table (Synced with CCTV feeds) -->
+        <div class="table-container">
+            <h3>
+                <span>Live Disaster Situations &amp; Telemetry Incidents</span>
+                <span style="font-size: 12px; color: #64748b; font-weight: normal;">Auto-synchronizes with CCTV feeds and drone detections</span>
+            </h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Incident ID</th>
+                        <th>Type / Scenario</th>
+                        <th>Coordinates / Sector</th>
+                        <th>Victims</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Assigned Team &amp; Approach ETA</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="incidentsTableBody">
+                    <tr><td colspan="8" style="text-align: center; color: #94a3b8; padding: 24px;">🟢 No active distress incidents. Field camera sector is clear.</td></tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- SOS Citizen Management Table -->
+        <div class="table-container">
+            <h3>
+                <span>Emergency Citizen SOS Management</span>
+                <span style="font-size: 12px; color: #64748b; font-weight: normal;">Direct beacon triggers from mobile citizens</span>
+            </h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>SOS ID</th>
+                        <th>Time</th>
+                        <th>Location Coordinates</th>
+                        <th>Status</th>
+                        <th>Assigned Response Unit</th>
+                    </tr>
+                </thead>
+                <tbody id="sosTableBody">
+                    <tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 24px;">🛡️ No emergency SOS signals received. Citizen emergency channel standing by.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Fullscreen Tactical CCTV Inspector Modal -->
+    <div id="cctvExpandModal">
+        <div class="cctv-modal-card">
+            <div class="cctv-modal-header">
+                <div>
+                    <h3 id="modalFeedTitle" style="margin: 0; font-size: 1.1rem; color: #00F0FF;">FEED INSPECTOR</h3>
+                    <small id="modalFeedMeta" style="color: #94a3b8; font-family: monospace;">TACTICAL HUD STREAM</small>
+                </div>
+                <button id="btnCloseCctvModal" style="background: none; border: none; color: #94a3b8; font-size: 20px; cursor: pointer;">✕</button>
+            </div>
+            <div class="cctv-modal-body">
+                <div style="background: #000; border-radius: 8px; overflow: hidden; position: relative;">
+                    <img id="modalLargeFrame" src="" alt="Enlarged CCTV Feed" style="width: 100%; height: 380px; object-fit: cover; display: block;">
+                    <div style="position: absolute; bottom: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; font-family: monospace; font-size: 11px; color: #00F0FF; background: rgba(0,0,0,0.7); padding: 6px 12px; border-radius: 4px;">
+                        <span id="modalTelemetryText">ALT: 120m | SPD: 18m/s</span>
+                        <span id="modalGpsText">GPS: 19.8824° N, 74.4761° E</span>
+                    </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 14px;">
+                    <div style="background: #0f172a; padding: 12px; border-radius: 6px; border: 1px solid var(--admin-border);">
+                        <h4 style="margin: 0 0 6px 0; font-size: 11px; color: #38bdf8;">AI DETECTION BREAKDOWN</h4>
+                        <div id="modalDetectionBreakdown" style="font-size: 12px; color: #f8fafc;">
+                            2 Persons in flood zone | Confidence: 92%
+                        </div>
+                    </div>
+
+                    <div style="background: #0f172a; padding: 12px; border-radius: 6px; border: 1px solid var(--admin-border);">
+                        <h4 style="margin: 0 0 6px 0; font-size: 11px; color: #10b981;">RECOMMENDED RESCUE UNIT</h4>
+                        <div id="modalRecommendedTeam" style="font-size: 13px; font-weight: bold; color: white;">
+                            NDRF Motorboat Team Bravo
+                        </div>
+                        <p id="modalRationale" style="font-size: 11px; color: #94a3b8; margin: 4px 0 0;">
+                            Group extraction protocol.
+                        </p>
+                    </div>
+
+                    <div id="modalDispatchActions" style="margin-top: auto;">
+                        <!-- Dispatch controls inside modal -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/admin.js"></script>
+</body>
+</html>
